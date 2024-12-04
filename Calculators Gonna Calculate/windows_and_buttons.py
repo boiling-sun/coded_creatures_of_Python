@@ -1,43 +1,20 @@
 import tkinter as tk
+import configs
+import operations as ops
 from itertools import cycle
 from functools import partial
 
+
 # Constants for window title and size
 WINDOW_TITLE = 'calculators gonna calculate!'
-WINDOW_HEIGHT, WINDOW_WIDTH = 400, 400
+WINDOW_HEIGHT, WINDOW_WIDTH = 400, 450
 
-# Packing options for frames
-PACK_KWARGS = {
-    'expand': True,
-    'fill': 'both',
-    'padx': 10,
-    'pady': 10
-}
+ALL_BUTTON_NAMES = 'C±%/789*456-123+0.='
 
-# Grid configuration for buttons
-GRID_ROWS, GRID_COLUMNS = 5, 4
-BUTTONS_GRID_KWARGS = {
-    'padx': 5,               # Padding on the x-axis
-    'pady': 5,               # Padding on the y-axis
-    'sticky': 'nsew',        # Make buttons expand to fill grid space
-}
+MAIN_DISPLAY = None
+CALCULATION_DISPLAY = None
 
-# Configuration for the display label
-DISPLAY_LABEL_KWARGS = {
-    'bg': 'green',           # Background color
-    'compound': 'right',     # Text alignment
-    'padx': 10,              # Padding on the x-axis
-    'pady': 10,              # Padding on the y-axis
-    'font': ('Courier New', 30),  # Font style and size
-    'fg': 'white',           # Text color
-    'anchor': 'e'            # Text anchor position
-}
 
-# Global variables to track display value and calculator state
-DISPLAY = None
-on_display_value = '0'
-values = []
-operator = ''
 
 def create_window():
     """Create the main application window and its frames."""
@@ -46,160 +23,114 @@ def create_window():
     root.geometry(f'{WINDOW_WIDTH}x{WINDOW_HEIGHT}')  
     
     # Create top and bottom frames for layout
-    top_frame = tk.Frame(root, width=WINDOW_WIDTH, height=WINDOW_HEIGHT * 0.25)
-    top_frame.pack(**PACK_KWARGS)
+    top_frame = tk.Frame(root, width=WINDOW_WIDTH, height=WINDOW_HEIGHT * 0.23)
+    top_frame.pack(**configs.PACK_KWARGS)
+
+    mid_frame = tk.Frame(root, width=WINDOW_WIDTH, height=WINDOW_HEIGHT * 0.05)
+    mid_frame.pack(**configs.PACK_KWARGS)
     
-    bottom_frame = tk.Frame(root, width=WINDOW_WIDTH, height=WINDOW_HEIGHT * 0.75)
-    bottom_frame.pack(**PACK_KWARGS)
+    bottom_frame = tk.Frame(root, width=WINDOW_WIDTH, height=WINDOW_HEIGHT * 0.72)
+    bottom_frame.pack(**configs.PACK_KWARGS)
     
-    return root, top_frame, bottom_frame
+    return root, top_frame, mid_frame, bottom_frame
 
 def create_display_label(frame):
     """Create a label to display the calculator's output."""
-    label = tk.Label(frame, text='0', **DISPLAY_LABEL_KWARGS)  
-    label.pack(**PACK_KWARGS)
-    return label
+    global MAIN_DISPLAY
+    label = tk.Label(frame, text='0', **configs.DISPLAY_LABEL_KWARGS)  
+    label.pack(**configs.PACK_KWARGS)
+    MAIN_DISPLAY = label
+    #return label
 
-def update_label(value=None, *, param=None):
-    """Update the label's text dynamically based on the provided value."""
-    global on_display_value
-    
-    if param == 'append':
-        # Append value to the existing value on display
-        if value == '.' and '.' in on_display_value:
-            pass
-        else:
-            on_display_value += str(value)
-            if '.' not in on_display_value:
-                on_display_value = on_display_value.lstrip('0')  # Remove leading zeros
-    elif value == '-':
-        if on_display_value.startswith('-'):
-            on_display_value = on_display_value[1:]
-        elif on_display_value == '0':
-            pass
-        else:
-            on_display_value =  '-' + on_display_value
-    else:
-        # Set the display value based on the provided value or reset to '0'
-        on_display_value = str(value) if value else '0'
-    
-    # Update the display with the new value
-    DISPLAY.config(text=on_display_value) 
-    return
+def config_display_w_arg(func):
+    def wrapper(arg):
+        func(arg)
+        MAIN_DISPLAY.config(text=ops.on_display_value)
+    return wrapper
+
+def config_display(func):
+    def wrapper():
+        func()
+        MAIN_DISPLAY.config(text=ops.on_display_value)
+    return wrapper
+
+
+@config_display
+def clear_command():
+    ops.reset_all_global_vals()
+
+@config_display
+def negative_command():
+    ops.negative_sign()
+
+@config_display
+def decimal_command():
+    ops.decimal_sign()
+
+@config_display
+def equals_command():
+    ops.equality_sign()
+
+@config_display
+def percent_command():
+    ops.percent_sign()
+
+@config_display_w_arg
+def process_operator_command(current_operator):
+     ops.process_operation(current_operator)
+
+@config_display_w_arg
+def enter_number_command(number):
+    ops.enter_number(number)
 
 def create_buttons(frame):
     """Create calculator buttons and arrange them in a grid."""
-
     def get_command(name):
         match name:
             case 'C':
-                return clear_all
+                return clear_command
             case '±':
-                return partial(update_label, '-')
+                return negative_command
             case '+' | '-' | '*' | '/':
-                return partial(process_operation, name)
+                return partial(process_operator_command, name)
+            case '.':
+                return decimal_command
             case '=':
-                return equal
+                return equals_command
+            case '%':
+                return percent_command
             case _:
-                return partial(update_label, name, param='append')
+                return partial(enter_number_command, name)
 
-    rows = cycle(range(GRID_ROWS))  # Cycle through rows
-    columns = cycle(range(GRID_COLUMNS))  # Cycle through columns
-    buttons = []
+    rows = cycle(range(configs.GRID_ROWS))  # Cycle through rows
+    columns = cycle(range(configs.GRID_COLUMNS))  # Cycle through columns
+    #buttons = []
     row = next(rows)
 
-    for butt in 'C±%/789*456-123+0.=':
+    for butt in ALL_BUTTON_NAMES:
         column = next(columns)
         button = tk.Button(frame, text=butt)
-        button.config(command=get_command(butt)) # Rewrite with correct functionality: now appends symbol to the display 
-        buttons.append(butt)
+        button.config(command=get_command(butt))
+        #buttons.append(butt)
         if butt == '0':
-            button.grid(row=row, column=column, columnspan=2, **BUTTONS_GRID_KWARGS)
+            button.grid(row=row, column=column, columnspan=2, **configs.BUTTONS_GRID_KWARGS)
             button.config(width=2)  # Make '0' button wider
             column = next(columns)  
             continue
-        button.grid(row=row, column=column, **BUTTONS_GRID_KWARGS)
+        button.grid(row=row, column=column, **configs.BUTTONS_GRID_KWARGS)
         if row == 0:
             frame.grid_columnconfigure(column, weight=1)
         if column == 3:
             frame.grid_rowconfigure(row, weight=1)
             row = next(rows)
-    return buttons
-
-def clear_all():
-    update_label()
-    clear_global_vals()
-    
-def clear_global_vals():
-    global values, operator
-    values.clear()
-    operator = ''
-
-def update_on_display(value):
-    global on_display_value
-    on_display_value = value
-    update_label(on_display_value)
-
-def process_operation(operation):
-    """Process the given operation and update values and display accordingly."""
-    global values, on_display_value, operator
-    
-    # Append the current display value to the list of values
-    if on_display_value:
-        values.append(on_display_value)
-
-    if not operator or len(values) == 1:
-        # If no operator is set, just set the current operation
-        operator = operation
-        print(f'values: {values}, operator: {operator}')
-    else:
-        # Calculate the result using the current operator and values
-        print(f'in "process_operation" : before calculation: values: {values}, operator: {operator}')
-        result = calculate(*values)
-        print(f'in "process_operation" : after calculation: values: {values}, operator: {operator}, result {result}')
-        update_on_display(result)  # Update the display with the result
-        
-        # Clear previous values and set the new operator
-        values.clear()
-        print(values)
-        operator = operation
-        #clear_global_vals()
-        
-        # Store the result for further calculations
-        values.append(result)
-
-    # Reset the display value for the next input
-    on_display_value = ''    
-    print(f'end of the "process_operation" function: values: {values}, operator: {operator}')
-
-def calculate(a, b=None):
-    if b:
-        print(f'{a}{operator}{b}={str(eval(f'{a}{operator}{b}'))}')
-    else: 
-        print(f'{a}{operator}{b}={a}')
-    return str(eval(f'{a}{operator}{b}')) if b else str(a)
-        
-def equal():
-    global values, on_display_value
-    if on_display_value:
-        values.append(on_display_value)
-    print(f'in "equal" : before calculation: values: {values}, operator: {operator}')
-    result = calculate(*values)
-    print(f'in "equal" : after calculation: values: {values}, operator: {operator}, result {result}')
-    update_on_display(result)  # Update the display with the resul
-    clear_global_vals()
-    # Store the result for further calculations
-    values.append(result)
-    # Reset the display value for the next input
-    on_display_value = ''    
-    print(f'end of the "equal" function: values: {values}, operator: {operator}')
+    #return buttons
+    return
 
 def main():
     global DISPLAY
-    root, top_frame, bottom_frame = create_window()
+    root, top_frame, mid_frame, bottom_frame = create_window()
     DISPLAY = create_display_label(top_frame)
-    buttons = create_buttons(bottom_frame)
-    #update_label(DISPLAY, '01234', param='')
+    create_buttons(bottom_frame)
     root.mainloop()
 
 if __name__ == '__main__':
