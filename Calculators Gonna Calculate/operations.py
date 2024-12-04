@@ -54,14 +54,16 @@ def calculate_result():
         return None
     else: 
         a, b = values  # Unpack values for calculation
-    print(f'Calculating: values: {values}, operator: {operator}')
-    try:
-        result = eval(f'{a} {operator} {b}')
-        print(f'Calculation result: {result}')
-        return format_result(result)
-    except ZeroDivisionError:
-        print("Error: Division by zero")
-        return 'Error'
+        print(f'Calculating: values: {values}, operator: {operator}')
+        try:
+            result = eval(f'{a} {operator} {b}')
+        except ZeroDivisionError:
+            print("Error: Division by zero")
+            return 'Error'
+        else:
+            print(f'Calculation result: {result}')
+            return format_result(result)
+
 
 def decimal_sign():
     """Add a decimal point to the display value if not already present."""

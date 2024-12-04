@@ -130,7 +130,7 @@ def main():
     global DISPLAY
     root, top_frame, mid_frame, bottom_frame = create_window()
     DISPLAY = create_display_label(top_frame)
-    buttons = create_buttons(bottom_frame)
+    create_buttons(bottom_frame)
     root.mainloop()
 
 if __name__ == '__main__':
