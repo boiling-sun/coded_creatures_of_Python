@@ -163,3 +163,4 @@ cython_debug/
 
 # 
 .DS_Store
+.Calculators Gonna Calculate/operations_copy.py
