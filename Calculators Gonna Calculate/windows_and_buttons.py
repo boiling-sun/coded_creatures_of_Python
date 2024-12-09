@@ -83,7 +83,7 @@ def process_operator_command(current_operator):
 def enter_number_command(number):
     ops.enter_number(number)
 
-def create_buttons(frame):
+def create_buttons(frame, grid_rows, grid_columns, buttons_grid_kwargs):
     """Create calculator buttons and arrange them in a grid."""
     def get_command(name):
         match name:
@@ -102,22 +102,20 @@ def create_buttons(frame):
             case _:
                 return partial(enter_number_command, name)
 
-    rows = cycle(range(configs.GRID_ROWS))  # Cycle through rows
-    columns = cycle(range(configs.GRID_COLUMNS))  # Cycle through columns
-    #buttons = []
+    rows = cycle(range(grid_rows))  # Cycle through rows
+    columns = cycle(range(grid_columns))  # Cycle through columns
     row = next(rows)
 
     for butt in ALL_BUTTON_NAMES:
         column = next(columns)
         button = tk.Button(frame, text=butt)
         button.config(command=get_command(butt))
-        #buttons.append(butt)
         if butt == '0':
-            button.grid(row=row, column=column, columnspan=2, **configs.BUTTONS_GRID_KWARGS)
+            button.grid(row=row, column=column, columnspan=2, **buttons_grid_kwargs)
             button.config(width=2)  # Make '0' button wider
             column = next(columns)  
             continue
-        button.grid(row=row, column=column, **configs.BUTTONS_GRID_KWARGS)
+        button.grid(row=row, column=column, **buttons_grid_kwargs)
         if row == 0:
             frame.grid_columnconfigure(column, weight=1)
         if column == 3:
