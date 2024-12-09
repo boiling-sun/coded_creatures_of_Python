@@ -23,7 +23,7 @@ class Calculator:
         self.values.clear()
         self.operator = ''
         self.appending = True
-        print(f'Reset all global values: values: {self.ues}, operator: {self.rator}, display_value: {self.display_value}')
+        print(f'Reset all global values: values: {self.values}, operator: {self.operator}, display_value: {self.display_value}')
 
     def append_to_display(self, value):
         """Append a value to the current display value."""
@@ -112,7 +112,7 @@ class Calculator:
         if len(self.values) == 0:
             result = float(self.display_value) / 100
         elif len(self.values) == 1:
-            result = float(self.values[0]) * float(self.on_display_value) / 100
+            result = float(self.values[0]) * float(self.display_value) / 100
         self.set_display_value(self.format_result(result))
         print(f'display_value: {self.display_value}, values: {self.values}')
 
