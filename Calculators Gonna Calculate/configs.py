@@ -3,6 +3,13 @@ This code defines configuration options for a GUI application using the Tkinter 
 It includes packing options for frames, grid configuration for buttons, and settings for a display label.
 """
 
+# Constants for window title and size
+WINDOW_TITLE = 'calculators gonna calculate!'
+WINDOW_WIDTH, WINDOW_HEIGHT = 450, 400
+
+ALL_BUTTON_NAMES = 'C±%/789*456-123+0.='
+
+
 # Packing options for frames
 PACK_KWARGS = {
     'expand': True,          # Allow the widget to expand to fill any extra space
@@ -25,6 +32,16 @@ DISPLAY_LABEL_KWARGS = {
     'compound': 'right',     # Text alignment
     'padx': 10,              # Padding on the x-axis
     'pady': 10,              # Padding on the y-axis
+    'font': ('Courier New', 30),  # Font style and size
+    'fg': 'white',           # Text color
+    'anchor': 'e'            # Text anchor position
+}
+
+EXPRESSION_LABEL_KWARGS = {
+    'bg': 'grey',            # Background color
+    'compound': 'right',     # Text alignment
+    'padx': 5,               # Padding on the x-axis
+    'pady': 5,               # Padding on the y-axis
     'font': ('Courier New', 30),  # Font style and size
     'fg': 'white',           # Text color
     'anchor': 'e'            # Text anchor position
