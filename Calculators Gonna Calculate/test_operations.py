@@ -153,7 +153,6 @@ def test_repeated_equals(calculator):
     calculator.perform_operation()  # Повторное "="
     assert calculator.display_value == '11'  # Добавляется предыдущее значение (8 + 3)
 
-
 def test_chained_operations(calculator):
     """Тестирует последовательные операции."""
     calculator.set_display_value(5)
